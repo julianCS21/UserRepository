@@ -17,11 +17,16 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+
+    @Autowired
+    private UserProducter userProducter;
     @Autowired
     private PasswordEncoder passwordEncoder;
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserProducter userProducter){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userProducter = userProducter;
     }
 
 
@@ -29,7 +34,9 @@ public class UserService {
         try{
             String encodedPassword = this.passwordEncoder.encode(newUser.getPassword());
             newUser.setPassword(encodedPassword);
-            return this.userRepository.save(newUser);
+            User userCreated = this.userRepository.save(newUser);
+            this.userProducter.sendMessage(userCreated.getEmail());
+            return userCreated;
         } catch (RuntimeException e){
             throw new UserException(e.getMessage());
         }
